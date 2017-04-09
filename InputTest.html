@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Input Test</title>
+</head>
+<body>
+<input type="text" id="input">
+</body>
+<script>
+    var fun = (function () {
+        var _bind = function (obj) {
+            if(obj.input){
+                obj.input.addEventListener('keyup',function () {
+                    obj.render();
+                })
+            }
+        };
+
+        var _getValue = function (obj) {
+            return obj.input ? obj.input.value : null;
+        };
+
+        var inputFun = function (config) {
+
+        };
+
+        inputFun.prototype.init = function (config) {
+            this.input = document.getElementById(config.Id);
+            _bind(this);
+            return this;
+        };
+
+        inputFun.prototype.render = function () {
+            var value = _getValue(this);
+            if(!document.getElementById('show')){
+                var appended = document.createElement('span');
+                appended.setAttribute('id','show');
+                this.input.parentNode.appendChild(appended);
+            }
+            var show = document.getElementById('show');
+            if(/^[0-9a-zA-Z]+$/.exec(value)){
+                show.innerHTML = 'Pass';
+            }else{
+                show.innerHTML = 'Failed';
+            }
+        };
+
+        return inputFun;
+    })();
+
+    window.onload = function () {
+        new fun().init({Id:'input'});
+    }
+</script>
+</html>
