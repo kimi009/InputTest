@@ -8,6 +8,82 @@
 <input type="text" id="input">
 </body>
 <script>
+    (function () {
+        //initializing 开关巧妙实现调用原型而不是构造，还有回掉
+        var initializing = false,fnTest = /xyz/.test(function () {
+            xyz;
+        })? /\b_super\b/ : /.*/;
+        //global base ,this point window ,big parent class
+        this.Class = function () {
+
+        };
+        //inhertis point
+        Class.extend = function (prop) {
+            var _super = this.prototype;
+            initializing = true;
+            var prototype = new this();
+            initializing = false;
+            for(var name in prop){
+                prototype[name] = typeof prop[name] == 'function' && typeof _super[name] == 'function' &&
+                        fnTest.test(prop[name]) ?
+                    (function (name, fn) {
+                        //用闭包来存储
+                        return function () {
+                            var tmp = this._super;
+                            this._super = _super[name];
+                            var ret = fn.apply(this,arguments);
+                            this._super = tmp;
+                            return ret;
+                        };
+                    })(name,prop[name]) : prop[name];
+            }
+            function Class() {
+                if(!initializing && this.init){
+                    this.init.apply(this,arguments);
+                }
+            }
+
+            Class.prototype = prototype;
+            Class.prototype.constructor = Class;
+            Class.extend = arguments.callee;
+            return Class;
+        };
+    })();
+
+    var Person = Class.extend({
+        init:function (name) {
+            this.name = name;
+        },
+        Say:function (name) {
+            console.log(this.name + ' can say');
+        },
+        Sleep:function () {
+            console.log(this.name + ' can sleep');
+        }
+    });
+
+    var Student = Person.extend({
+        init:function (name) {
+            this._super('Student-'+name);
+        },
+        Sleep:function () {
+            this._super();
+            console.log('And sleep early');
+        },
+        DoHomeWork:function () {
+            console.log(this.name + ' can do homework');
+        }
+    });
+    var p = new Person('kimi');
+    p.Say();
+    p.Sleep();
+    var ming = new Student('xiaoming');
+    ming.Say();
+    ming.Sleep();
+    ming.DoHomeWork();
+
+
+
     var fun = (function () {
         var _bind = function (obj) {
             if(obj.input){
